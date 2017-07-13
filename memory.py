@@ -31,7 +31,7 @@ PURPLE = (255,0,255)
 CYAN = (0,255,255)
 
 BGCOLOR = NAVYBLUE
-LIGHTBCOLOR = GRAY
+LIGHTBGCOLOR = GRAY
 BOXCOLOR = WHITE
 HIGHLIGHTCOLOR = BLUE
 
@@ -229,3 +229,64 @@ def coverBoxesAnimation(board, boxesToCover):
     # Do the box cover animation
     for coverage in range(0, BOXSIZE + REVEALSPEED, REVEALSPEED):
         drawBoxCovers(board, boxesToCover, coverage)
+
+
+def drawBoard(board, revealed):
+    # draws all the boxes in their covered or revealed state
+    for boxx in range(BOARDWIDTH):
+        for boxy in range(BOARDHEIGHT):
+            left, top = leftTopCoordsOfBox(boxx, boxy)
+            if not revealed[boxx][boxy]:
+                #Draw a covered box
+                pygame.draw.rect(DISPLAYSURF, BOXCOLOR, (left, top, BOXSIZE, BOXSIZE))
+            else:
+                # Draw the (revealed) icon
+                shape, color = getShapeAndColor(board, boxx, boxy)
+                drawIcon(shape, color, boxx, boxy)
+
+
+def drawHighlightbox(boxx, boxy):
+    left, top = leftTopCoordsOfBox(boxx, boxy)
+    pygame.draw.rect(DISPLAYSURF, HIGHLIGHTCOLOR, (left - 5, top - 5, BOXSIZE + 10, BOXSIZE + 10), 4)
+
+
+def startGameAnimation(board):
+    # randomly reveal the boxes 8 at a time
+    coveredBoxes = generateRevealedBoxesData(False)
+    boxes = []
+    for x in range(BOARDWIDTH):
+        for y in range(BOARDHEIGHT):
+            boxes.append( (x, y) )
+    random.shuffle(boxes)
+    boxGroups = splitIntoGroupsOf(8, boxes)
+
+    drawBoard(board, coveredBoxes)
+    for boxGroup in boxGroups:
+        revealBoxesAnimation(board, boxGroup)
+        coverBoxesAnimation(board, boxGroup)
+
+
+def gameWonAnimation(board):
+    #flash background color when player wins
+    coveredBoxes = generateRevealedBoxesData(True)
+    color1 = LIGHTBGCOLOR
+    color2 = BGCOLOR
+
+    for i in range(13):
+        color1, color2 = color2, color1 #swap the colors
+        DISPLAYSURF.fill(color1)
+        drawBoard(board, coveredBoxes)
+        pygame.display.update()
+        pygame.time.wait(300)
+
+
+def hasWon(revealedBoxes):
+    #return true if all have been revealed otherwise False
+    for i in revealedBoxes:
+        if False in i:
+            return False # return false if any boxes are covered
+    return True
+
+
+if __name__ == '__main__':
+    main()

@@ -11,10 +11,10 @@ WINDOWWIDTH = 640
 WINDOWHEIGHT = 480
 REVEALSPEED = 8 #speed of boxes sliding and cover reveal
 BOXSIZE = 40
-GAPSIZE 10
+GAPSIZE = 10
 BOARDWIDTH = 10
 BOARDHEIGHT = 7
-assert (BOARDWIDTH * BOARHEIGHT) % 2 == 0, 'Board needs to have an even number of boxes for pairs to match'
+assert (BOARDWIDTH * BOARDHEIGHT) % 2 == 0, 'Board needs to have an even number of boxes for pairs to match'
 XMARGIN = int((WINDOWWIDTH - (BOARDWIDTH * (BOXSIZE + GAPSIZE))) / 2)
 YMARGIN = int((WINDOWHEIGHT - (BOARDHEIGHT * (BOXSIZE + GAPSIZE))) /2)
 
@@ -56,7 +56,7 @@ def main():
     pygame.display.set_caption("Memory")
 
     mainBoard = getRandomizedBoard()
-    revealedBoxes = generateRevealedBoxesData(Flase)
+    revealedBoxes = generateRevealedBoxesData(False)
 
     firstSelection = None
 

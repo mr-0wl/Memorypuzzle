@@ -127,3 +127,105 @@ def generateRevealedBoxesData(val):
     for i in range(BOARDWIDTH):
         revealedBoxes.append([val] * BOARDHEIGHT)
     return revealedBoxes
+
+
+def getRandomizedBoard():
+    #get a list of every possible shape in every color
+    icons = []
+    for color in ALLCOLORS:
+        for shape in ALLSHAPES:
+            icons.append( (shape, color) )
+
+    random.shuffle(icons) #randomize the order of the icon list
+    numIconsUsed = int(BOARDHEIGHT * BOARDWIDTH / 2) #calculate how many icons are needed
+    icons = icons[:numIconsUsed] * 2 #make 2 of each
+    random.shuffle(icons)
+
+    # Create the board data structure with randomly placed icons
+    board = []
+    for x in range(BOARDWIDTH):
+        column = []
+        for y in range(BOARDHEIGHT):
+            column.append(icons[0])
+            del icons[0] #remove the icons as they are assigned
+        board.append(column)
+    return board
+
+
+def splitIntoGroupsOf(groupSize, theList):
+    # splits a list into a list of lists where the inner lists have at
+    # most groupSize number of items
+    result = []
+    for i in range(0, len(theList), groupSize):
+        result.append(theList[i:i + groupSize])
+    return result
+
+
+def leftTopCoordsOfBox(boxx, boxy):
+    # convert board coordinates to pixel coordinates
+    left = boxx * (BOXSIZE + GAPSIZE) + XMARGIN
+    top = boxy * (BOXSIZE + GAPSIZE) + YMARGIN
+    return (left, top)
+
+
+def getBoxAtPixel(x, y):
+    for boxx in range(BOARDWIDTH):
+        for boxy in range(BOARDHEIGHT):
+            left, top = leftTopCoordsOfBox(boxx, boxy)
+            boxRect = pygame.Rect(left, top, BOXSIZE, BOXSIZE)
+            if boxRect.collidepoint(x, y):
+                return (boxx, boxy)
+    return (None, None)
+
+
+def drawIcon(shape, color, boxx, boxy):
+    quarter = int(BOXSIZE * 0.25) # syntatic stuff
+    half = int(BOXSIZE * 0.5) # syntatic stuff
+
+    left, top = leftTopCoordsOfBox(boxx, boxy) #gets pixel cords from board coors
+    #Draw the shapes
+    if shape == DONUT:
+        pygame.draw.circle(DISPLAYSURF, color, (left + half, top + half), half - 5)
+        pygame.draw.circle(DISPLAYSURF, BGCOLOR, (left + half, top + half), quarter - 5)
+    elif shape == SQUARE:
+        pygame.draw.rect(DISPLAYSURF, color, (left + quarter, top + quarter, BOXSIZE - half, BOXSIZE - half))
+    elif shape == DIAMOND:
+        pygame.draw.polygon(DISPLAYSURF, color, ((left + half, top), (left + BOXSIZE - 1, top + half), (left + half, top + BOXSIZE - 1), (left, top + half)))
+    elif shape == LINES:
+        for i in range(0, BOXSIZE, 4):
+            pygame.draw.line(DISPLAYSURF, color, (left, top + i), (left + i, top))
+            pygame.draw.line(DISPLAYSURF, color, (left + i, top + BOXSIZE - 1), (left + BOXSIZE - 1, top + i))
+    elif shape == OVAL:
+        pygame.draw.ellipse(DISPLAYSURF, color, (left, top + quarter, BOXSIZE, half))
+
+
+def getShapeAndColor(board, boxx, boxy):
+    #shape value for x, y spot is stored in board[x][y][0]
+    #color value for x, y spot is stored in board[x][y][1]
+    return board[boxx][boxy][0], board[boxx][boxy][1]
+
+
+def drawBoxCovers(board, boxes, coverage):
+    # draws boxes being covered / revealed, 'boxes' is a list
+    # of two item lists, which have the X & Y spot of the box
+    for box in boxes:
+        left, top = leftTopCoordsOfBox(box[0], box[1])
+        pygame.draw.rect(DISPLAYSURF, BGCOLOR, (left, top, BOXSIZE, BOXSIZE))
+        shape, color = getShapeAndColor(board, box[0], box[1])
+        drawIcon(shape, color, box[0], box[1])
+        if coverage > 0: #only draw the cover if there is a coverage
+            pygame.draw.rect(DISPLAYSURF, BOXCOLOR, (left, top, coverage, BOXSIZE))
+    pygame.display.update()
+    FPSCLOCK.tick(FPS)
+
+
+def revealBoxesAnimation(board, boxesToReveal):
+    # Do the box reveal animation
+    for coverage in range(BOXSIZE, (-REVEALSPEED) -1, - REVEALSPEED):
+        drawBoxCovers(board, boxesToReveal, coverage)
+
+
+def coverBoxesAnimation(board, boxesToCover):
+    # Do the box cover animation
+    for coverage in range(0, BOXSIZE + REVEALSPEED, REVEALSPEED):
+        drawBoxCovers(board, boxesToCover, coverage)

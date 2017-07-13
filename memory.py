@@ -101,7 +101,7 @@ def main():
                         revealedBoxes[firstSelection[0]][firstSelection[1]] = False
                         revealedBoxes[boxx][boxy] = False
                     elif hasWon(revealedBoxes): #check if all pairs found
-                        gaemWonAnimation(mainBoard)
+                        gameWonAnimation(mainBoard)
                         pygame.time.wait(2000)
 
                         #reset the Board
